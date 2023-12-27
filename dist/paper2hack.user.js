@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.13
+// @version      0.1.14
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,36 +16,16 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.10"
+    const VERSION = "beta 0.1.14"
     let newApi
-    switch (location.href) { //remember: they must have trailing slash!!
-        case "https://paper-io.com/battleroyale/":
-            newApi = true
-            break
-        case "https://paper-io.com/teams/":
-            newApi = true
-            break
-        case "https://paperanimals.io/":
-            newApi = true
-            break
-        case "https://amogus.io/":
-            newApi = true
-            break
-        case "https://paper-io.com/":
-            newApi = false
-            break
-        default:
-            if (!!paper2) {
-                newApi = false
-            } else if (!!paperio2api) {
-                newApi = true
-            } else {
-                //uhh idk
-            }
+    if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
+        newApi = true;
+    } else {
+        newApi = false;
     }
-    if (newApi === true) {
+    if (newApi) {
         console.log("[paper2hack] USING NEW API")
-    } else if (newApi === false) {
+    } else {
         console.log("[paper2hack] USING OLD API")
     }
     window.api = {
