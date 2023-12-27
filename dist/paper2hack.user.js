@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.12
+// @version      0.1.13
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -84,6 +84,13 @@ window.addEventListener('load', function () {
         },
         "_skins": [],
         "pause": function () {
+            if (!newApi) {
+                // Toggle between paused and unpaused
+                // This is not possible in the new api (I believe)
+                paper2.game.paused = !paper2.game.paused;
+                // Return so the unit speed doesn't change
+                return;
+            }
             if (api.config().unitSpeed !== 0) {
                 api.config().unitSpeed = 0
                 console.log("[paper2hack] Paused")
@@ -91,6 +98,7 @@ window.addEventListener('load', function () {
                 api.config().unitSpeed = 90
                 console.log("[paper2hack] Unpaused")
             }
+            return;
         },
         "despawnOthers": function () {
             api.game().units = [api.game().player]
@@ -145,19 +153,16 @@ window.addEventListener('load', function () {
     let mods = pane.addFolder({ title: "Mods" })
     mods.addInput(ETC, "speed", { min: 5, max: 500, count: 5 })
     mods.addInput(ETC, "skin", {
-        label: "Skin (requires refresh)",
-        options: {
-            "Coming soon (TODO)": ""
-        }
+        label: "Skin (requires respawning)",
+        // Yeah unreadable i know
+        // Got this with a simple js trick ;)
+        options: {"No skin":"skin_00","Orange":"skin_20","Burger":"skin_19","Matrix":"skin_49","Green Goblin":"skin_48","Squid Game":"skin_47","Venom":"skin_46","Money Heist":"skin_45","Doge":"skin_44","Baby Yoda":"skin_43","Chess Queen":"skin_42","Impostor":"skin_41","Cyber Punk":"skin_40","Stay safe":"skin_39","Sanitizer":"skin_38","Doctor":"skin_37","COVID-19":"skin_36","Geralt":"skin_35","Batman":"skin_30","Joker":"skin_29","Pennywise":"skin_28","Reaper":"skin_27","Captain America":"skin_26","Thanos":"skin_25","Cupid":"skin_24","Snowman":"skin_23","Present":"skin_22","Christmas":"skin_21","Ladybug":"skin_18","Tank":"skin_17","Duck":"skin_16","Cake":"skin_15","Cash":"skin_14","Sushi":"skin_13","Bat":"skin_12","Heart":"skin_11","Rainbow":"skin_10","Nyan cat":"skin_01","Watermelon":"skin_02","Ghost":"skin_03","Pizza":"skin_04","Minion":"skin_05","Freddy":"skin_06","Spiderman":"skin_07","Teletubby":"skin_08","Unicorn":"skin_09"}
     }).on("change", ev => {
-        let id;
-        shop?.btnsData.forEach(i => {
-            if (i.name === ev.value) {
-                id = i.useId
-            }
-        })
-        Cookies.set('skin', id)
-    })
+        let id = ev.value;
+        // Set the chosen skin to the one selected
+        shop.chosenSkin = id;
+        Cookies.set('skin', id);
+    })   
     mods.addInput(ETC, "debugging", { label: "Debug" }).on("change", ev => {
         api.game().debug = ev.value
         api.game().debugGraph = ev.value
