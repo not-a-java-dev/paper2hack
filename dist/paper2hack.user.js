@@ -45,6 +45,13 @@ window.addEventListener('load', function () {
         }
     }
     let ETC = {
+        "newMessage":function (message) {
+            let newMessage = document.createElement("p");
+            document.querySelectorAll("#message")[1].appendChild(newMessage);
+            newMessage.innerText = message;
+            // Return the new message, if you need it
+            return newMessage;
+        },
         "reset": function () { alert("Cannot be done with tweakpane!\nTry clearing site data.") },
         "zoomScroll": false,
         "debugging": false,
@@ -198,10 +205,10 @@ window.addEventListener('load', function () {
     pane.on("change", e => {
         localStorage.setItem("paper2hack", JSON.stringify(pane.exportPreset()))
     })
-    let message = this.document.querySelectorAll("#message p");
-    message[0].innerText = `paper2hack ${VERSION}`;
-    message[1].innerHTML = `<a style="color: white" href="https://github.com/stretch07/paper2hack">check/install update</a>`;
-    message[2].innerText = "have fun hacking";
-    message[3].remove();
-    message[4].remove();
+    let messages = this.document.querySelectorAll("#message p");
+    messages.forEach((msg)=>{msg.remove();}) //Remove all messages
+    ETC.newMessage(`paper2hack ${VERSION}`);
+    let checkinstallmessage = ETC.newMessage('');
+    checkinstallmessage.innerHTML = `<a style="color: white" href="https://github.com/stretch07/paper2hack">check/install update</a>`;
+    ETC.newMessage(`have fun hacking!`);
 }, false);
