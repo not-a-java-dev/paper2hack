@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.14
+// @version      0.1.15
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,7 +16,7 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.14"
+    const VERSION = "beta 0.1.15"
     let newApi
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
         newApi = true;
@@ -48,6 +48,7 @@ window.addEventListener('load', function () {
         "reset": function () { alert("Cannot be done with tweakpane!\nTry clearing site data.") },
         "zoomScroll": false,
         "debugging": false,
+        "map": false,
         "speed": api.config().unitSpeed,
         "skin": "",
         "skinUnlock": () => {
@@ -133,7 +134,9 @@ window.addEventListener('load', function () {
 
     let pane = new Tweakpane.Pane({ title: "paper2hack"})
     let mods = pane.addFolder({ title: "Mods" })
-    mods.addInput(ETC, "speed", { min: 5, max: 500, count: 5 })
+    mods.addInput(ETC, "speed", { min: 5, max: 500, count: 5 }).on("change", ev => {
+        api.config().unitSpeed = ev.value;
+    })
     mods.addInput(ETC, "skin", {
         label: "Skin (requires respawning)",
         // Yeah unreadable i know
@@ -148,6 +151,9 @@ window.addEventListener('load', function () {
     mods.addInput(ETC, "debugging", { label: "Debug" }).on("change", ev => {
         api.game().debug = ev.value
         api.game().debugGraph = ev.value
+    })
+    mods.addInput(ETC, "map", { label: "Map"}).on("change", ev => {
+        api.game().debugView = ev.value;
     })
     mods.addButton({ title: "Pause/Play" }).on("click", ETC.pause)
     if (!newApi) {
