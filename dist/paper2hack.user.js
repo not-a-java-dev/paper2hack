@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.15
+// @version      0.1.16
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,7 +16,7 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.15"
+    const VERSION = "beta 0.1.16"
     let newApi
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
         newApi = true;
@@ -138,16 +138,29 @@ window.addEventListener('load', function () {
         api.config().unitSpeed = ev.value;
     })
     mods.addInput(ETC, "skin", {
-        label: "Skin (requires respawning)",
+        label: "Skin",
         // Yeah unreadable i know
         // Got this with a simple js trick ;)
         options: {"No skin":"skin_00","Orange":"skin_20","Burger":"skin_19","Matrix":"skin_49","Green Goblin":"skin_48","Squid Game":"skin_47","Venom":"skin_46","Money Heist":"skin_45","Doge":"skin_44","Baby Yoda":"skin_43","Chess Queen":"skin_42","Impostor":"skin_41","Cyber Punk":"skin_40","Stay safe":"skin_39","Sanitizer":"skin_38","Doctor":"skin_37","COVID-19":"skin_36","Geralt":"skin_35","Batman":"skin_30","Joker":"skin_29","Pennywise":"skin_28","Reaper":"skin_27","Captain America":"skin_26","Thanos":"skin_25","Cupid":"skin_24","Snowman":"skin_23","Present":"skin_22","Christmas":"skin_21","Ladybug":"skin_18","Tank":"skin_17","Duck":"skin_16","Cake":"skin_15","Cash":"skin_14","Sushi":"skin_13","Bat":"skin_12","Heart":"skin_11","Rainbow":"skin_10","Nyan cat":"skin_01","Watermelon":"skin_02","Ghost":"skin_03","Pizza":"skin_04","Minion":"skin_05","Freddy":"skin_06","Spiderman":"skin_07","Teletubby":"skin_08","Unicorn":"skin_09"}
     }).on("change", ev => {
         let id = ev.value;
-        // Set the chosen skin to the one selected
+        // The skin manager uses the codeName to get the skin itself
+        let codeName;
+        shop.btnsData.forEach(s => {
+            if (s.useId == id) {
+                codeName = s.codeName;
+            }
+        })
+        // The skin manager treats the default skin as undefined
+        // if we don't do this it will create an error and will not change the skin
+        if (codeName == "default") {codeName = undefined;}
+        // Get the skin from the code name
+        let skin = api.game().skinManager.getPlayerSkin(codeName);
+        // And set it to the player!
+        api.game().player.setSkin(skin);
         shop.chosenSkin = id;
         Cookies.set('skin', id);
-    })   
+    })
     mods.addInput(ETC, "debugging", { label: "Debug" }).on("change", ev => {
         api.game().debug = ev.value
         api.game().debugGraph = ev.value
