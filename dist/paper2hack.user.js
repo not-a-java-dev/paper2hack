@@ -81,14 +81,16 @@ window.addEventListener('load', function () {
             return;
         },
         "despawnOthers": function () {
-            api.game().units = [api.game().player]
-            /*api.game().units.forEach(item => {
-                if(item === api.game().player){
-                    //dont despawn!
-                } else {
-                    item.schemes.manager.Schemes[0].prototype.kill()
-                }
-            })*/
+            // Array where we store the units to kill
+            let unitkills = [];
+            for (let i = 0; i < api.game().units.length; i++) {
+                if (api.game().units[i].isPlayer) {continue;} // Ignore if we get the player unit
+                unitkills.push(api.game().units[i]);
+            }
+            // Iterate through the units that we're going to kill
+            unitkills.forEach((obj) => {
+                api.game().kill(obj, obj);
+            })
         },
         "help": function () {
             alert(`
@@ -159,11 +161,11 @@ window.addEventListener('load', function () {
             window.removeEventListener("wheel", scrollE)
         }
     })
-    mods.addButton({ title: "Reset" }).on('click', ETC.reset)
-    let about = pane.addFolder({ title: "About", expanded: false })
-    about.addButton({ title: "Help" })
-    about.addButton({ title: "Keyboard Shortcuts" }).on("click", ETC.keysList)
-    about.addButton({ title: "GitHub" }).on("click", ETC.openGithub)
+    mods.addButton({ title: "Reset" }).on('click', ETC.reset);
+    let about = pane.addFolder({ title: "About", expanded: false });
+    about.addButton({ title: "Help" }).on("click", ETC.help);
+    about.addButton({ title: "Keyboard Shortcuts" }).on("click", ETC.keysList);
+    about.addButton({ title: "GitHub" }).on("click", ETC.openGithub);
     /*Last things*/
     if (!localStorage.getItem('paper2hack')) {
         this.localStorage.setItem('paper2hack', JSON.stringify({}))
@@ -172,13 +174,10 @@ window.addEventListener('load', function () {
     pane.on("change", e => {
         localStorage.setItem("paper2hack", JSON.stringify(pane.exportPreset()))
     })
-
-
-
-    document.querySelectorAll("#message p")[0].innerText = `paper2hack ${VERSION}`
-    document.querySelectorAll("#message p")[1].innerHTML = `<a style="color: white" href="https://github.com/stretch07/paper2hack">check/install update</a>`
-    document.querySelectorAll("#message p")[2].innerText = "have fun hacking"
-    document.querySelectorAll("#message p")[3].remove()
-    document.querySelectorAll("#message p")[4].remove()
-    document.querySelectorAll("#message p")[5].remove()
+    let message = this.document.querySelectorAll("#message p");
+    message[0].innerText = `paper2hack ${VERSION}`;
+    message[1].innerHTML = `<a style="color: white" href="https://github.com/stretch07/paper2hack">check/install update</a>`;
+    message[2].innerText = "have fun hacking";
+    message[3].remove();
+    message[4].remove();
 }, false);
