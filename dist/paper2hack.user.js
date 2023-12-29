@@ -75,7 +75,12 @@ window.addEventListener('load', function () {
             if (!newApi) {
                 // Toggle between paused and unpaused
                 // This is not possible in the new api (I believe)
-                paper2.game.paused = !paper2.game.paused;
+                api.game().paused = !paper2.game.paused;
+                if (api.game().paused) {
+                    console.log("[paper2hack] Paused");
+                } else {
+                    console.log("[paper2hack] Unpaused");
+                }
                 // Return so the unit speed doesn't change
                 return;
             }
