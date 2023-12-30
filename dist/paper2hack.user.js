@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.17
+// @version      0.1.18
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,7 +16,7 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.17"
+    const VERSION = "beta 0.1.18"
     let newApi
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
         newApi = true;
@@ -42,6 +42,26 @@ window.addEventListener('load', function () {
             } else {
                 return paper2.game
             }
+        },
+        player: function () {
+            return this.game().player;   
+        },
+        searchForUnit: function (name) {
+            for (let i = 0; i < this.game().units.length; i++) {
+                if (this.game().units[i].name.toLowerCase() == name.toLowerCase()) {return this.game().units[i];}
+            }
+            return null;
+        },
+        addMessage: function (unit, text, hexColor) {
+            unit.addLabel({
+                "unit": undefined, // Assign to the unit
+                "text": text,
+                "color": hexColor
+            })
+        },
+        kill: function (unitToKill, unitToGetKill) {
+            if (unitToGetKill == undefined) {unitToGetKill = this.player()}
+            this.game().kill(unitToKill, unitToGetKill)
         }
     }
     let ETC = {
@@ -61,8 +81,8 @@ window.addEventListener('load', function () {
         "skinUnlock": () => {
             try {
                 shop.btnsData.forEach(item => {
-                    if (item.unlockName) {
-                        unlockSkin(item.unlockName)
+                    if (item.codeName) {
+                        unlockSkin(item.codeName)
                     }
                 })
                 console.log("[paper2hack] skins unlocked!")
@@ -102,7 +122,7 @@ window.addEventListener('load', function () {
             }
             // Iterate through the units that we're going to kill
             unitkills.forEach((obj) => {
-                api.game().kill(obj, obj);
+                api.kill(obj, obj);
             })
         },
         "help": function () {
@@ -156,7 +176,7 @@ window.addEventListener('load', function () {
         options: {"No skin":"skin_00","Orange":"skin_20","Burger":"skin_19","Matrix":"skin_49","Green Goblin":"skin_48","Squid Game":"skin_47","Venom":"skin_46","Money Heist":"skin_45","Doge":"skin_44","Baby Yoda":"skin_43","Chess Queen":"skin_42","Impostor":"skin_41","Cyber Punk":"skin_40","Stay safe":"skin_39","Sanitizer":"skin_38","Doctor":"skin_37","COVID-19":"skin_36","Geralt":"skin_35","Batman":"skin_30","Joker":"skin_29","Pennywise":"skin_28","Reaper":"skin_27","Captain America":"skin_26","Thanos":"skin_25","Cupid":"skin_24","Snowman":"skin_23","Present":"skin_22","Christmas":"skin_21","Ladybug":"skin_18","Tank":"skin_17","Duck":"skin_16","Cake":"skin_15","Cash":"skin_14","Sushi":"skin_13","Bat":"skin_12","Heart":"skin_11","Rainbow":"skin_10","Nyan cat":"skin_01","Watermelon":"skin_02","Ghost":"skin_03","Pizza":"skin_04","Minion":"skin_05","Freddy":"skin_06","Spiderman":"skin_07","Teletubby":"skin_08","Unicorn":"skin_09","Eye":"eye", "Frankenstein":"Frank", "Santa":"santa", "Rudolph":"rudolf"}
     }).on("change", ev => {
         // Oh boy! No player No skin!
-        if (!api.game() || !api.game().player) {return;}
+        if (!api.game() || !api.player()) {return;}
         let id = ev.value;
         // The skin manager uses the codeName to get the skin itself
         let codeName;
@@ -178,7 +198,7 @@ window.addEventListener('load', function () {
         // Get the skin from the code name
         let skin = api.game().skinManager.getPlayerSkin(codeName);
         // And set it to the player!
-        api.game().player.setSkin(skin);
+        api.player().setSkin(skin);
         shop.chosenSkin = id;
         Cookies.set('skin', id);
     })
@@ -194,7 +214,7 @@ window.addEventListener('load', function () {
         mods.addButton({ title: "Unlock skins", }).on("click", ETC.skinUnlock)
     }
     mods.addButton({ title: "I give up" }).on("click",() => {
-        api.game().kill(api.game().player);
+        api.kill(api.player());
     })
     mods.addButton({ title: "Despawn others" }).on("click", ETC.despawnOthers)
     mods.addInput(ETC, "zoomScroll", { label: "Scroll to Zoom" }).on("change", ev => {
