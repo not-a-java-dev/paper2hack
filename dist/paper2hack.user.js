@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.18
+// @version      0.1.19
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,7 +16,7 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.18"
+    const VERSION = "beta 0.1.19"
     let newApi
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
         newApi = true;
@@ -75,8 +75,6 @@ window.addEventListener('load', function () {
         "reset": function () { alert("Cannot be done with tweakpane!\nTry clearing site data.") },
         "zoomScroll": false,
         "debugging": false,
-        "map": false,
-        "speed": api.config().unitSpeed,
         "skin": "",
         "skinUnlock": () => {
             try {
@@ -90,7 +88,6 @@ window.addEventListener('load', function () {
                 console.log("[paper2hack] Error unlocking skins!", e)
             }
         },
-        "_skins": [],
         "pause": function () {
             if (!newApi) {
                 // Toggle between paused and unpaused
@@ -144,14 +141,6 @@ window.addEventListener('load', function () {
             window.open("https://github.com/stretch07/paper2hack", '_blank').focus();
         }
     }
-    if (!newApi) {
-        shop?.btnsData.forEach(i => {
-            if (i.useId === Cookies.get('skin')) {
-                ETC.skin = i.name
-            }
-        })
-        shop?.btnsData.forEach(i => { ETC._skins.push(i.name) })
-    }
     function scrollE(e) {
         if (e.deltaY > 0) {
             if (api.config().maxScale > 0.45) {
@@ -166,9 +155,7 @@ window.addEventListener('load', function () {
 
     let pane = new Tweakpane.Pane({ title: "paper2hack"})
     let mods = pane.addFolder({ title: "Mods" })
-    mods.addInput(ETC, "speed", { min: 5, max: 500, count: 5 }).on("change", ev => {
-        api.config().unitSpeed = ev.value;
-    })
+    mods.addInput(api.config(), "unitSpeed", { label: "Speed", min: 5, max: 500, count: 5 });
     mods.addInput(ETC, "skin", {
         label: "Skin",
         // Yeah unreadable i know
@@ -180,6 +167,7 @@ window.addEventListener('load', function () {
         let id = ev.value;
         // The skin manager uses the codeName to get the skin itself
         let codeName;
+        let secret = true;
         shop.btnsData.forEach(s => {
             if (s.useId == id) {
                 codeName = s.codeName;
@@ -188,10 +176,11 @@ window.addEventListener('load', function () {
             }
         })
         // Edge cases since these skins don't have use ids
-        if (id == "eye")    {codeName = id;}
-        if (id == "Frank")  {codeName = id;}
-        if (id == "santa")  {codeName = id;}
-        if (id == "rudolf") {codeName = id;}
+        if (id == "eye")         {codeName = id;}
+        else if (id == "Frank")  {codeName = id;}
+        else if (id == "santa")  {codeName = id;}
+        else if (id == "rudolf") {codeName = id;}
+        else {secret = false;}
         // The skin manager treats the default skin as undefined
         // if we don't do this it will create an error and will not change the skin
         if (codeName == "default") {codeName = undefined;}
@@ -199,16 +188,16 @@ window.addEventListener('load', function () {
         let skin = api.game().skinManager.getPlayerSkin(codeName);
         // And set it to the player!
         api.player().setSkin(skin);
-        shop.chosenSkin = id;
-        Cookies.set('skin', id);
+        if (!secret) { 
+            shop.chosenSkin = id;
+            Cookies.set('skin', id);
+        }
     })
     mods.addInput(ETC, "debugging", { label: "Debug" }).on("change", ev => {
         api.game().debug = ev.value
         api.game().debugGraph = ev.value
     })
-    mods.addInput(ETC, "map", { label: "Map"}).on("change", ev => {
-        api.game().debugView = ev.value;
-    })
+    mods.addInput(api.game(), "debugView", { label: "Map"});
     mods.addButton({ title: "Pause/Play" }).on("click", ETC.pause)
     if (!newApi) {
         mods.addButton({ title: "Unlock skins", }).on("click", ETC.skinUnlock)
