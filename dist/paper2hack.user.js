@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.12
+// @version      0.1.18
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,39 +16,23 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.10"
+    const VERSION = "beta 0.1.18"
     let newApi
-    switch (location.href) { //remember: they must have trailing slash!!
-        case "https://paper-io.com/battleroyale/":
-            newApi = true
-            break
-        case "https://paper-io.com/teams/":
-            newApi = true
-            break
-        case "https://paperanimals.io/":
-            newApi = true
-            break
-        case "https://amogus.io/":
-            newApi = true
-            break
-        case "https://paper-io.com/":
-            newApi = false
-            break
-        default:
-            if (!!paper2) {
-                newApi = false
-            } else if (!!paperio2api) {
-                newApi = true
-            } else {
-                //uhh idk
-            }
+    if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
+        newApi = true;
+    } else {
+        newApi = false;
     }
-    if (newApi === true) {
+    if (newApi) {
         console.log("[paper2hack] USING NEW API")
-    } else if (newApi === false) {
+    } else {
         console.log("[paper2hack] USING OLD API")
     }
     window.api = {
+        /**
+         * Gets the configuration
+         * @returns the configuration
+         */
         config: function () {
             if (newApi) {
                 return paperio2api.config
@@ -56,25 +40,90 @@ window.addEventListener('load', function () {
                 return paper2.currentConfig
             }
         },
+        /**
+         * Gets the game
+         * @returns the game
+         */
         game: function () {
             if (newApi) {
                 return paperio2api.game
             } else {
                 return paper2.game
             }
+        },
+        /**
+         * Gets the player
+         * @returns the player
+         */
+        player: function () {
+            return this.game().player;   
+        },
+        /**
+         * Search an unit by the name
+         * If no unit is found, it will return `null`
+         * If an unit is found, it will return that unit
+         * If multiple names are used
+         * The first one will be returned
+         * @param {*} name The name to be searched for
+         * @returns The unit if found, null if not
+         */
+        searchForUnit: function (name) {
+            for (let i = 0; i < this.game().units.length; i++) {
+                if (this.game().units[i].name.toLowerCase() == name.toLowerCase()) {return this.game().units[i];}
+            }
+            return null;
+        },
+        /**
+         * Create a message, that will appear above the specified unit.
+         * @param {*} unit The unit 
+         * @param {*} text The text
+         * @param {*} hexColor The color, in hex, for example : `#FF00FF`
+         */
+        addMessage: function (unit, text, hexColor) {
+            unit.addLabel({
+                "unit": undefined, // Assign to the unit
+                "text": text,
+                "color": hexColor
+            })
+        },
+        /**
+         * Kills the unit, by the other unit
+         * @param {*} unitToKill The unit that will be killed
+         * @param {*} unitToGetKill The unit that'll get the kill stat for
+         */
+        kill: function (unitToKill, unitToGetKill) {
+            if (unitToGetKill == undefined) {unitToGetKill = this.player()}
+            this.game().kill(unitToKill, unitToGetKill)
+        },
+        /**
+         * Returns the resource located at the resource array (`a0_0x344c`)
+         * This is only intended for reverse engineering
+         * @param {number} res the resource, starting at `196`
+         * @returns the resource, as a `string` can also be undefined
+         */
+        getResource: function (res) {
+            return a0_0x2cc6(res);
         }
     }
     let ETC = {
+        "newMessage":function (message) {
+            let newMessage = document.createElement("p");
+            document.querySelectorAll("#message")[1].appendChild(newMessage);
+            newMessage.innerText = message;
+            // Return the new message, if you need it
+            return newMessage;
+        },
         "reset": function () { alert("Cannot be done with tweakpane!\nTry clearing site data.") },
         "zoomScroll": false,
         "debugging": false,
+        "map": false,
         "speed": api.config().unitSpeed,
         "skin": "",
         "skinUnlock": () => {
             try {
                 shop.btnsData.forEach(item => {
-                    if (item.unlockName) {
-                        unlockSkin(item.unlockName)
+                    if (item.codeName) {
+                        unlockSkin(item.codeName)
                     }
                 })
                 console.log("[paper2hack] skins unlocked!")
@@ -84,6 +133,18 @@ window.addEventListener('load', function () {
         },
         "_skins": [],
         "pause": function () {
+            if (!newApi) {
+                // Toggle between paused and unpaused
+                // This is not possible in the new api (I believe)
+                api.game().paused = !paper2.game.paused;
+                if (api.game().paused) {
+                    console.log("[paper2hack] Paused");
+                } else {
+                    console.log("[paper2hack] Unpaused");
+                }
+                // Return so the unit speed doesn't change
+                return;
+            }
             if (api.config().unitSpeed !== 0) {
                 api.config().unitSpeed = 0
                 console.log("[paper2hack] Paused")
@@ -91,16 +152,19 @@ window.addEventListener('load', function () {
                 api.config().unitSpeed = 90
                 console.log("[paper2hack] Unpaused")
             }
+            return;
         },
         "despawnOthers": function () {
-            api.game().units = [api.game().player]
-            /*api.game().units.forEach(item => {
-                if(item === api.game().player){
-                    //dont despawn!
-                } else {
-                    item.schemes.manager.Schemes[0].prototype.kill()
-                }
-            })*/
+            // Array where we store the units to kill
+            let unitkills = [];
+            for (let i = 0; i < api.game().units.length; i++) {
+                if (api.game().units[i].isPlayer) {continue;} // Ignore if we get the player unit
+                unitkills.push(api.game().units[i]);
+            }
+            // Iterate through the units that we're going to kill
+            unitkills.forEach((obj) => {
+                api.kill(obj, obj);
+            })
         },
         "help": function () {
             alert(`
@@ -143,29 +207,59 @@ window.addEventListener('load', function () {
 
     let pane = new Tweakpane.Pane({ title: "paper2hack"})
     let mods = pane.addFolder({ title: "Mods" })
-    mods.addInput(ETC, "speed", { min: 5, max: 500, count: 5 })
+    mods.addInput(ETC, "speed", { min: 5, max: 500, count: 5 }).on("change", ev => {
+        api.config().unitSpeed = ev.value;
+    })
     mods.addInput(ETC, "skin", {
-        label: "Skin (requires refresh)",
-        options: {
-            "Coming soon (TODO)": ""
-        }
+        label: "Skin",
+        // Yeah unreadable i know
+        // Got this with a simple js trick ;)
+        options: {"No skin":"skin_00","Orange":"skin_20","Burger":"skin_19","Matrix":"skin_49","Green Goblin":"skin_48","Squid Game":"skin_47","Venom":"skin_46","Money Heist":"skin_45","Doge":"skin_44","Baby Yoda":"skin_43","Chess Queen":"skin_42","Impostor":"skin_41","Cyber Punk":"skin_40","Stay safe":"skin_39","Sanitizer":"skin_38","Doctor":"skin_37","COVID-19":"skin_36","Geralt":"skin_35","Batman":"skin_30","Joker":"skin_29","Pennywise":"skin_28","Reaper":"skin_27","Captain America":"skin_26","Thanos":"skin_25","Cupid":"skin_24","Snowman":"skin_23","Present":"skin_22","Christmas":"skin_21","Ladybug":"skin_18","Tank":"skin_17","Duck":"skin_16","Cake":"skin_15","Cash":"skin_14","Sushi":"skin_13","Bat":"skin_12","Heart":"skin_11","Rainbow":"skin_10","Nyan cat":"skin_01","Watermelon":"skin_02","Ghost":"skin_03","Pizza":"skin_04","Minion":"skin_05","Freddy":"skin_06","Spiderman":"skin_07","Teletubby":"skin_08","Unicorn":"skin_09","Eye":"eye", "Frankenstein":"Frank", "Santa":"santa", "Rudolph":"rudolf"}
     }).on("change", ev => {
-        let id;
-        shop?.btnsData.forEach(i => {
-            if (i.name === ev.value) {
-                id = i.useId
+        // Oh boy! No player No skin!
+        if (!api.game() || !api.player()) {return;}
+        let id = ev.value;
+        // The skin manager uses the codeName to get the skin itself
+        let codeName;
+	let secret = true;
+        shop.btnsData.forEach(s => {
+            if (s.useId == id) {
+                codeName = s.codeName;
+                // There is no skins with the same code name, so we can return!
+                return;
             }
         })
-        Cookies.set('skin', id)
+        // Edge cases since these skins don't have use ids
+        if (id == "eye")    {codeName = id;}
+	else if (id == "Frank")  {codeName = id;}
+	else if (id == "santa")  {codeName = id;}
+	else if (id == "rudolf") {codeName = id;}
+	else { secret = false; }
+	// The skin manager treats the default skin as undefined
+        // if we don't do this it will create an error and will not change the skin
+        if (codeName == "default") {codeName = undefined;}
+        // Get the skin from the code name
+        let skin = api.game().skinManager.getPlayerSkin(codeName);
+        // And set it to the player!
+        api.player().setSkin(skin);
+	if (secret) {return;}
+        shop.chosenSkin = id;
+        Cookies.set('skin', id);
     })
     mods.addInput(ETC, "debugging", { label: "Debug" }).on("change", ev => {
         api.game().debug = ev.value
         api.game().debugGraph = ev.value
     })
+    mods.addInput(ETC, "map", { label: "Map"}).on("change", ev => {
+        api.game().debugView = ev.value;
+    })
     mods.addButton({ title: "Pause/Play" }).on("click", ETC.pause)
     if (!newApi) {
         mods.addButton({ title: "Unlock skins", }).on("click", ETC.skinUnlock)
     }
+    mods.addButton({ title: "I give up" }).on("click",() => {
+        api.kill(api.player());
+    })
     mods.addButton({ title: "Despawn others" }).on("click", ETC.despawnOthers)
     mods.addInput(ETC, "zoomScroll", { label: "Scroll to Zoom" }).on("change", ev => {
         if (ev.value === true) {
@@ -174,11 +268,11 @@ window.addEventListener('load', function () {
             window.removeEventListener("wheel", scrollE)
         }
     })
-    mods.addButton({ title: "Reset" }).on('click', ETC.reset)
-    let about = pane.addFolder({ title: "About", expanded: false })
-    about.addButton({ title: "Help" })
-    about.addButton({ title: "Keyboard Shortcuts" }).on("click", ETC.keysList)
-    about.addButton({ title: "GitHub" }).on("click", ETC.openGithub)
+    mods.addButton({ title: "Reset" }).on('click', ETC.reset);
+    let about = pane.addFolder({ title: "About", expanded: false });
+    about.addButton({ title: "Help" }).on("click", ETC.help);
+    about.addButton({ title: "Keyboard Shortcuts" }).on("click", ETC.keysList);
+    about.addButton({ title: "GitHub" }).on("click", ETC.openGithub);
     /*Last things*/
     if (!localStorage.getItem('paper2hack')) {
         this.localStorage.setItem('paper2hack', JSON.stringify({}))
@@ -187,13 +281,10 @@ window.addEventListener('load', function () {
     pane.on("change", e => {
         localStorage.setItem("paper2hack", JSON.stringify(pane.exportPreset()))
     })
-
-
-
-    document.querySelectorAll("#message p")[0].innerText = `paper2hack ${VERSION}`
-    document.querySelectorAll("#message p")[1].innerHTML = `<a style="color: white" href="https://github.com/stretch07/paper2hack">check/install update</a>`
-    document.querySelectorAll("#message p")[2].innerText = "have fun hacking"
-    document.querySelectorAll("#message p")[3].remove()
-    document.querySelectorAll("#message p")[4].remove()
-    document.querySelectorAll("#message p")[5].remove()
+    let messages = this.document.querySelectorAll("#message p");
+    messages.forEach((msg)=>{msg.remove();}) //Remove all messages
+    ETC.newMessage(`paper2hack ${VERSION}`);
+    let checkinstallmessage = ETC.newMessage('');
+    checkinstallmessage.innerHTML = `<a style="color: white" href="https://github.com/stretch07/paper2hack">check/install update</a>`;
+    ETC.newMessage(`have fun hacking!`);
 }, false);
