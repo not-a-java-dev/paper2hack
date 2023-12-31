@@ -180,6 +180,7 @@ window.addEventListener('load', function () {
         let id = ev.value;
         // The skin manager uses the codeName to get the skin itself
         let codeName;
+	let secret = true;
         shop.btnsData.forEach(s => {
             if (s.useId == id) {
                 codeName = s.codeName;
@@ -189,16 +190,18 @@ window.addEventListener('load', function () {
         })
         // Edge cases since these skins don't have use ids
         if (id == "eye")    {codeName = id;}
-        if (id == "Frank")  {codeName = id;}
-        if (id == "santa")  {codeName = id;}
-        if (id == "rudolf") {codeName = id;}
-        // The skin manager treats the default skin as undefined
+	else if (id == "Frank")  {codeName = id;}
+	else if (id == "santa")  {codeName = id;}
+	else if (id == "rudolf") {codeName = id;}
+	else { secret = false; }
+	// The skin manager treats the default skin as undefined
         // if we don't do this it will create an error and will not change the skin
         if (codeName == "default") {codeName = undefined;}
         // Get the skin from the code name
         let skin = api.game().skinManager.getPlayerSkin(codeName);
         // And set it to the player!
         api.player().setSkin(skin);
+	if (secret) {return;}
         shop.chosenSkin = id;
         Cookies.set('skin', id);
     })
