@@ -29,6 +29,10 @@ window.addEventListener('load', function () {
         console.log("[paper2hack] USING OLD API")
     }
     window.api = {
+        /**
+         * Gets the configuration
+         * @returns the configuration
+         */
         config: function () {
             if (newApi) {
                 return paperio2api.config
@@ -36,6 +40,10 @@ window.addEventListener('load', function () {
                 return paper2.currentConfig
             }
         },
+        /**
+         * Gets the game
+         * @returns the game
+         */
         game: function () {
             if (newApi) {
                 return paperio2api.game
@@ -43,15 +51,34 @@ window.addEventListener('load', function () {
                 return paper2.game
             }
         },
+        /**
+         * Gets the player
+         * @returns the player
+         */
         player: function () {
             return this.game().player;   
         },
+        /**
+         * Search an unit by the name
+         * If no unit is found, it will return `null`
+         * If an unit is found, it will return that unit
+         * If multiple names are used
+         * The first one will be returned
+         * @param {*} name The name to be searched for
+         * @returns The unit if found, null if not
+         */
         searchForUnit: function (name) {
             for (let i = 0; i < this.game().units.length; i++) {
                 if (this.game().units[i].name.toLowerCase() == name.toLowerCase()) {return this.game().units[i];}
             }
             return null;
         },
+        /**
+         * Create a message, that will appear above the specified unit.
+         * @param {*} unit The unit 
+         * @param {*} text The text
+         * @param {*} hexColor The color, in hex, for example : `#FF00FF`
+         */
         addMessage: function (unit, text, hexColor) {
             unit.addLabel({
                 "unit": undefined, // Assign to the unit
@@ -59,9 +86,23 @@ window.addEventListener('load', function () {
                 "color": hexColor
             })
         },
+        /**
+         * Kills the unit, by the other unit
+         * @param {*} unitToKill The unit that will be killed
+         * @param {*} unitToGetKill The unit that'll get the kill stat for
+         */
         kill: function (unitToKill, unitToGetKill) {
             if (unitToGetKill == undefined) {unitToGetKill = this.player()}
             this.game().kill(unitToKill, unitToGetKill)
+        },
+        /**
+         * Returns the resource located at the resource array (`a0_0x344c`)
+         * This is only intended for reverse engineering
+         * @param {number} res the resource, starting at `196`
+         * @returns the resource, as a `string` can also be undefined
+         */
+        getResource: function (res) {
+            return a0_0x2cc6(res);
         }
     }
     let ETC = {
