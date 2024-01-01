@@ -28,6 +28,15 @@ window.addEventListener('load', function () {
     } else {
         console.log("[paper2hack] USING OLD API")
     }
+    // New api loads too slow!!
+    // Maybe plan in only supporting the old api? just an opinion
+    (async() => {
+        console.log("[paper2hack] Waiting for api");
+        while(!window.hasOwnProperty("paperio2api")) // Wait till' paperio2api exists
+            if (window.hasOwnProperty("paper2")) {return;} // If paper2 instead exists, return
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Otherwise.. wait!!
+        console.log("[paper2hack] api defined!");
+    })();
     window.api = {
         /**
          * Gets the configuration
@@ -35,9 +44,9 @@ window.addEventListener('load', function () {
          */
         config: function () {
             if (newApi) {
-                return paperio2api.config
+                return paperio2api.config;
             } else {
-                return paper2.currentConfig
+                return paper2.currentConfig;
             }
         },
         /**
