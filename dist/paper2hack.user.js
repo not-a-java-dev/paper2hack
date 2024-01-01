@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.18
+// @version      0.1.19
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,8 +16,9 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.18"
+    const VERSION = "beta 0.1.19"
     let newApi
+    let finish = false; // Start booting
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
         newApi = true;
     } else {
@@ -225,6 +226,7 @@ window.addEventListener('load', function () {
         // Got this with a simple js trick ;)
         options: {"No skin":"skin_00","Orange":"skin_20","Burger":"skin_19","Matrix":"skin_49","Green Goblin":"skin_48","Squid Game":"skin_47","Venom":"skin_46","Money Heist":"skin_45","Doge":"skin_44","Baby Yoda":"skin_43","Chess Queen":"skin_42","Impostor":"skin_41","Cyber Punk":"skin_40","Stay safe":"skin_39","Sanitizer":"skin_38","Doctor":"skin_37","COVID-19":"skin_36","Geralt":"skin_35","Batman":"skin_30","Joker":"skin_29","Pennywise":"skin_28","Reaper":"skin_27","Captain America":"skin_26","Thanos":"skin_25","Cupid":"skin_24","Snowman":"skin_23","Present":"skin_22","Christmas":"skin_21","Ladybug":"skin_18","Tank":"skin_17","Duck":"skin_16","Cake":"skin_15","Cash":"skin_14","Sushi":"skin_13","Bat":"skin_12","Heart":"skin_11","Rainbow":"skin_10","Nyan cat":"skin_01","Watermelon":"skin_02","Ghost":"skin_03","Pizza":"skin_04","Minion":"skin_05","Freddy":"skin_06","Spiderman":"skin_07","Teletubby":"skin_08","Unicorn":"skin_09","Eye":"eye", "Frankenstein":"Frank", "Santa":"santa", "Rudolph":"rudolf"}
     }).on("change", ev => {
+        if (newApi && finish) {window.alert("Cannot do this in this version!");}
         // Oh boy! No player No skin!
         if (!api.game() || !api.player()) {return;}
         let id = ev.value;
@@ -290,6 +292,8 @@ window.addEventListener('load', function () {
     pane.on("change", e => {
         localStorage.setItem("paper2hack", JSON.stringify(pane.exportPreset()))
     })
+    document.querySelector(".tp-dfwv").style.zIndex = "50"; //Make sure the menu shows up over some GUI
+    finish = true; // Ended booting
     let messages = this.document.querySelectorAll("#message p");
     messages.forEach((msg)=>{msg.remove();}) //Remove all messages
     ETC.newMessage(`paper2hack ${VERSION}`);
