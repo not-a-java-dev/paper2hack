@@ -127,6 +127,7 @@ window.addEventListener('load', function () {
         "zoomScroll": false,
         "debugging": false,
         "map": false,
+        "despawnK": false,
         "speed": api.config().unitSpeed,
         "skin": "",
         "skinUnlock": () => {
@@ -272,6 +273,20 @@ window.addEventListener('load', function () {
         api.kill(api.player());
     })
     mods.addButton({ title: "Despawn others" }).on("click", ETC.despawnOthers)
+    mods.addInput(ETC, "despawnK", { label: "Despawn Others on K" })
+
+    // keyboard shortcuts
+    // pause: Spacebar
+    // kill everyone: K
+    document.addEventListener("keydown", ev => {
+        if (!ETC.despawnK) return;
+        if (event.key === 'k') {
+            ETC.despawnOthers()
+        }
+        if (event.key === " ") {
+            ETC.pause()
+        }
+    })
     mods.addInput(ETC, "zoomScroll", { label: "Scroll to Zoom" }).on("change", ev => {
         if (ev.value === true) {
             window.addEventListener("wheel", scrollE)
