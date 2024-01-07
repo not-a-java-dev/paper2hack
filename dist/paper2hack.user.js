@@ -187,10 +187,7 @@ window.addEventListener('load', function () {
         `)
         },
         "keysList": function () {
-            alert(`
-            None for the moment!\n
-            Stay tuned...
-        `)
+            alert(`Keyboard shortcuts:\n- Space: Pause/play\n- K: Despawn all other players`)
         },
         "openGithub": function () {
             window.open("https://github.com/stretch07/paper2hack", '_blank').focus();
