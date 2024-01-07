@@ -276,6 +276,7 @@ window.addEventListener('load', function () {
     // pause: Spacebar
     // kill everyone: K
     document.addEventListener("keydown", ev => {
+	if (!api.player()) {return;} //If not in game, return
         if (event.key === 'k') {
             if (!ETC.despawnK) return;
             ETC.despawnOthers()
