@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.19
+// @version      0.1.20
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,7 +16,7 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.19"
+    const VERSION = "beta 0.1.20"
     let newApi
     let finish = false; // Start booting
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
@@ -127,6 +127,7 @@ window.addEventListener('load', function () {
         "zoomScroll": false,
         "debugging": false,
         "map": false,
+        "despawnK": false,
         "speed": api.config().unitSpeed,
         "skin": "",
         "skinUnlock": () => {
@@ -186,10 +187,7 @@ window.addEventListener('load', function () {
         `)
         },
         "keysList": function () {
-            alert(`
-            None for the moment!\n
-            Stay tuned...
-        `)
+            alert(`Keyboard shortcuts:\n- Space: Pause/play\n- K: Despawn all other players`)
         },
         "openGithub": function () {
             window.open("https://github.com/stretch07/paper2hack", '_blank').focus();
@@ -272,6 +270,20 @@ window.addEventListener('load', function () {
         api.kill(api.player());
     })
     mods.addButton({ title: "Despawn others" }).on("click", ETC.despawnOthers)
+    mods.addInput(ETC, "despawnK", { label: "Despawn Others on K" })
+
+    // keyboard shortcuts
+    // pause: Spacebar
+    // kill everyone: K
+    document.addEventListener("keydown", ev => {
+        if (event.key === 'k') {
+            if (!ETC.despawnK) return;
+            ETC.despawnOthers()
+        }
+        if (event.key === " ") {
+            ETC.pause()
+        }
+    })
     mods.addInput(ETC, "zoomScroll", { label: "Scroll to Zoom" }).on("change", ev => {
         if (ev.value === true) {
             window.addEventListener("wheel", scrollE)
