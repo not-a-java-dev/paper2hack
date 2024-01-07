@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         paper2hack
 // @description  Modding utility/menu for paper.io
-// @version      0.1.20
+// @version      0.1.21
 // @author       its-pablo
 // @match        https://paper-io.com
 // @match        https://paper-io.com/teams/
@@ -16,7 +16,7 @@
 adblock = () => false //this detects if adblock is on, we make it always return false so that the impostor skin loads
 window.addEventListener('load', function () {
     "use strict";
-    const VERSION = "beta 0.1.20"
+    const VERSION = "beta 0.1.21"
     let newApi
     let finish = false; // Start booting
     if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
