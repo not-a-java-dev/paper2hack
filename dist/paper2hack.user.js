@@ -19,23 +19,13 @@ window.addEventListener('load', function () {
     const VERSION = "beta 0.1.21"
     let newApi
     let finish = false; // Start booting
-    if (typeof(paper2) == "undefined") { // if paper2 does not exist (its undefined), it means we are in the new api
-        newApi = true;
-    } else {
-        newApi = false;
-    }
-    if (newApi) {
-        console.log("[paper2hack] USING NEW API")
-    } else {
-        console.log("[paper2hack] USING OLD API")
-    }
     // New api loads too slow!!
     // Maybe plan in only supporting the old api? just an opinion
     (async() => {
         console.log("[paper2hack] Waiting for api");
-        while(!window.hasOwnProperty("paperio2api")) // Wait till' paperio2api exists
-            if (window.hasOwnProperty("paper2")) {return;} // If paper2 instead exists, return
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Otherwise.. wait!!
+        while(!window.hasOwnProperty("paperio2api")) // paperio2api was first defined!
+            if (window.hasOwnProperty("paper2")) {newApi = false;return;} // paper2 was first defined!
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait!!
         console.log("[paper2hack] api defined!");
     })();
     window.api = {
@@ -192,14 +182,6 @@ window.addEventListener('load', function () {
         "openGithub": function () {
             window.open("https://github.com/stretch07/paper2hack", '_blank').focus();
         }
-    }
-    if (!newApi) {
-        shop?.btnsData.forEach(i => {
-            if (i.useId === Cookies.get('skin')) {
-                ETC.skin = i.name
-            }
-        })
-        shop?.btnsData.forEach(i => { ETC._skins.push(i.name) })
     }
     function scrollE(e) {
         if (e.deltaY > 0) {
