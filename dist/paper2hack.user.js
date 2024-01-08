@@ -22,11 +22,11 @@ window.addEventListener('load', function () {
     // New api loads too slow!!
     // Maybe plan in only supporting the old api? just an opinion
     (async() => {
-        console.log("[paper2hack] Waiting for api");
-        while(!window.hasOwnProperty("paperio2api")) // paperio2api was first defined!
-            if (window.hasOwnProperty("paper2")) {newApi = false;return;} // paper2 was first defined!
+        console.log("[paper2hack] waiting for an API");
+        while(!window.hasOwnProperty("paperio2api")) // Wait until "paperio2api" is defined
+            if (window.hasOwnProperty("paper2")) {console.log("[paper2hack] Using old API");newApi = false;return;} // "paper2" was first defined!
             await new Promise(resolve => setTimeout(resolve, 1000)); // Wait!!
-        console.log("[paper2hack] api defined!");
+	console.log("[paper2hack] Using new API");newApi = true; // "paperio2api" was defined first
     })();
     window.api = {
         /**
